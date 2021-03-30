@@ -34,9 +34,7 @@ class _AddEditUserState extends State<AddEditUser> {
   void initState() {
     super.initState();
     if (userData != null) {
-
-      _editingControllerName.text = userData.name + " " + userData.last_name;
-
+      _setUserData(userData);
     } else {
       userData = new UserData();
     }
@@ -78,6 +76,7 @@ class _AddEditUserState extends State<AddEditUser> {
               webService.createUser(userData).then((value) {
                 if (value) {
                   _showSnackbar("Usuario creado exitosamente", context);
+                  Navigator.of(context).pop();
                 } else {
                   _showSnackbar("Error al crear usuario", context);
                 }
@@ -117,6 +116,8 @@ class _AddEditUserState extends State<AddEditUser> {
         onFieldSubmitted: (value) {
           if (title == "Nombre") {
             FocusScope.of(context).requestFocus(_focusNodeAddress);
+          } else if (title == "Dirección") {
+            FocusScope.of(context).requestFocus(new FocusNode());
           }
         },
         onTap: () {
@@ -162,12 +163,13 @@ class _AddEditUserState extends State<AddEditUser> {
 
     String _name = _editingControllerName.text;
 
-    if (_name.contains(" ")) {
+    if (_name.contains(" ") && _name.length > _name.indexOf(" ") + 1) {
       userData.name = _name.substring(0, _name.indexOf(" "));
       userData.last_name = _name.substring(_name.indexOf(" ") + 1);
       userData.address = _editingControllerAddress.text;
       return true;
     } else {
+      _showSnackbar("Debe ingresar nombre y apellido", this.context);
       return false;
     }
 
@@ -179,6 +181,13 @@ class _AddEditUserState extends State<AddEditUser> {
         content: Text(message),
       ),
     );
+  }
+
+  void _setUserData(UserData userData) {
+    _editingControllerName.text = userData.name + " " + userData.last_name;
+    _editingControllerDate.text = userData.birthday;
+    _editingControllerAge.text = userData.age.toString();
+    _editingControllerAddress.text = userData.address;
   }
 
 }

@@ -4,14 +4,12 @@ import 'package:crud_example/screens/add_edit_user.dart';
 import 'package:crud_example/webservices/webservice.dart';
 import 'package:flutter/material.dart';
 
-
 class MainScreen extends StatefulWidget {
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
-
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   static const ADD_USER_SCREEN = 'Agregar Usuario';
   static const EDIT_USER_SCREEN = 'Editar Usuario';
 
@@ -47,9 +45,10 @@ class _MainScreenState extends State<MainScreen> {
           ),
           onRefresh: () {
             return webService.getData().then((value) {
-              _listUsers.clear();
-              _listUsers.addAll(value);
-              setState(() {});
+              setState(() {
+                _listUsers.clear();
+                _listUsers.addAll(value);
+              });
             });
           },
         ),
@@ -57,7 +56,21 @@ class _MainScreenState extends State<MainScreen> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.person_add),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditUser(typeScreen: ADD_USER_SCREEN, userData: null,),));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddEditUser(
+                  typeScreen: ADD_USER_SCREEN,
+                  userData: null,
+                ),
+              )).then((value) {
+            webService.getData().then((value) {
+              setState(() {
+                _listUsers.clear();
+                _listUsers.addAll(value);
+              });
+            });
+          });
         },
       ),
     );
@@ -77,16 +90,27 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
       confirmDismiss: (direction) => _showDialog(index, context, direction),
-      background: _showContainerDismissible(Colors.red, Icon(Icons.delete, color: Colors.white,),
-          "Eliminar", AlignmentDirectional.centerStart
-      ),
-      secondaryBackground: _showContainerDismissible(Colors.orange, Icon(Icons.edit, color: Colors.white,),
-          "Actualizar", AlignmentDirectional.centerEnd
-      ),
+      background: _showContainerDismissible(
+          Colors.red,
+          Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
+          "Eliminar",
+          AlignmentDirectional.centerStart),
+      secondaryBackground: _showContainerDismissible(
+          Colors.orange,
+          Icon(
+            Icons.edit,
+            color: Colors.white,
+          ),
+          "Actualizar",
+          AlignmentDirectional.centerEnd),
     );
   }
 
-  Future<bool> _showDialog(int index, BuildContext context, DismissDirection direction) async {
+  Future<bool> _showDialog(
+      int index, BuildContext context, DismissDirection direction) async {
     String _action;
     int actualId = _listUsers[index].id;
     if (direction == DismissDirection.startToEnd) {
@@ -112,18 +136,37 @@ class _MainScreenState extends State<MainScreen> {
               onPressed: () {
                 if (direction == DismissDirection.endToStart) {
                   Navigator.pop(context, false);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditUser(typeScreen: EDIT_USER_SCREEN, userData: _listUsers[index],),));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddEditUser(
+                          typeScreen: EDIT_USER_SCREEN,
+                          userData: _listUsers[index],
+                        ),
+                      ));
                 } else {
                   sqfliteHelper.deleteUser(actualId).then((value) {
-                    webService.deleteUser(actualId).then((result) {
-                      if (result) {
-                        Navigator.pop(context, true);
-                      } else {
-                        Navigator.pop(context, false);
-                      }
-                    });
+                    if (value == 1) {
+                      webService.deleteUser(actualId).then((result) {
+                        if (result) {
+                          _showSnackbar(
+                              "Usuario eliminado exitosamente", context);
+                          setState(() {
+                            _listUsers.removeAt(index);
+                          });
+                          Navigator.pop(context, true);
+                        } else {
+                          _showSnackbar(
+                              "Error eliminando usuario (API)", context);
+                          Navigator.pop(context, false);
+                        }
+                      });
+                    } else {
+                      _showSnackbar(
+                          "Error eliminando usuario (LOCAL)", context);
+                      Navigator.pop(context, false);
+                    }
                   });
-
                 }
               },
             )
@@ -133,23 +176,33 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _showContainerDismissible(Color color, Icon icon, String title, AlignmentDirectional alignment) {
+  Widget _showContainerDismissible(
+      Color color, Icon icon, String title, AlignmentDirectional alignment) {
     return Container(
         margin: EdgeInsets.symmetric(vertical: 5.0),
         padding: EdgeInsets.only(left: 10.0, right: 10.0),
         alignment: alignment,
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5.0),
-            color: color
-        ),
+            borderRadius: BorderRadius.circular(5.0), color: color),
         child: Wrap(
           children: [
             icon,
-            SizedBox(width: 10.0,),
-            Text(title, style: TextStyle(fontSize: 18.0, color: Colors.white),)
+            SizedBox(
+              width: 10.0,
+            ),
+            Text(
+              title,
+              style: TextStyle(fontSize: 18.0, color: Colors.white),
+            )
           ],
-        )
-    );
+        ));
   }
 
+  void _showSnackbar(String message, BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
 }

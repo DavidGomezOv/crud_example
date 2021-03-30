@@ -37,7 +37,10 @@ class WebService {
       'address' : userData.address
     };
 
-    var response = await http.post(Uri.parse(_baseUrl), headers: {'Content-Type': 'application/json'}, body: jsonEncode(datos)).timeout(Duration(seconds: 30));
+    var response = await http.post(Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(datos)
+    ).timeout(Duration(seconds: 30));
     var json = jsonDecode(response.body);
 
     UserData usersDataRecive = UserData.fromJson(json);
