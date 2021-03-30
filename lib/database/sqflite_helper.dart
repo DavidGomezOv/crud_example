@@ -21,7 +21,7 @@ class SqfliteHelper {
     );
   }
 
-  Future<void> insertUser(Users_Data users) async {
+  Future<void> insertUser(UserData users) async {
     final Database db = await _openDb();
 
     await db.insert(
@@ -31,8 +31,7 @@ class SqfliteHelper {
     );
   }
 
-
-  Future<List<Users_Data>> listUsers() async {
+  Future<List<UserData>> listUsers() async {
     final Database db = await _openDb();
 
     final List<Map<String, dynamic>> maps = await db.query('users');
@@ -42,7 +41,7 @@ class SqfliteHelper {
     }
 
     return List.generate(maps.length, (i) {
-      return Users_Data(
+      return UserData(
         id: maps[i]['id'],
         name: maps[i]['name'],
         age: maps[i]['age'],
@@ -57,6 +56,11 @@ class SqfliteHelper {
     final Database db = await _openDb();
 
     return await db.delete('users', where: "id = ?", whereArgs: [id],);
+  }
+
+  Future<void> deleteTableData() async {
+    final Database db = await _openDb();
+    await db.delete('users');
   }
 
 }

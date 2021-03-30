@@ -1,4 +1,4 @@
-class Users_Data {
+class UserData {
 
   int id;
   String name;
@@ -7,9 +7,9 @@ class Users_Data {
   String birthday;
   String address;
 
-  Users_Data({this.id, this.name, this.age, this.last_name, this.birthday, this.address});
+  UserData({this.id, this.name, this.age, this.last_name, this.birthday, this.address});
 
-  Users_Data.fromJson(Map<String, dynamic> json_map) {
+  UserData.fromJson(Map<String, dynamic> json_map) {
     id =  int.parse(json_map['id']);
     name = json_map['name'];
     age = json_map['age'];

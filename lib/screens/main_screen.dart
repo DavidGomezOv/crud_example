@@ -15,7 +15,7 @@ class _MainScreenState extends State<MainScreen> {
   static const ADD_USER_SCREEN = 'Agregar Usuario';
   static const EDIT_USER_SCREEN = 'Editar Usuario';
 
-  List<Users_Data> _listUsers = [];
+  List<UserData> _listUsers = [];
   WebService webService = new WebService();
   SqfliteHelper sqfliteHelper = new SqfliteHelper();
 
@@ -57,22 +57,15 @@ class _MainScreenState extends State<MainScreen> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.person_add),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditUser(typeScreen: ADD_USER_SCREEN,),));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditUser(typeScreen: ADD_USER_SCREEN, userData: null,),));
         },
       ),
     );
   }
 
-
-  @override
-  void dispose() {
-    super.dispose();
-
-  }
-
   Widget _createItem(int index, BuildContext context) {
     return Dismissible(
-      key: Key(index.toString()),
+      key: UniqueKey(),
       child: Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5.0),
@@ -119,7 +112,7 @@ class _MainScreenState extends State<MainScreen> {
               onPressed: () {
                 if (direction == DismissDirection.endToStart) {
                   Navigator.pop(context, false);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditUser(typeScreen: EDIT_USER_SCREEN,),));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditUser(typeScreen: EDIT_USER_SCREEN, userData: _listUsers[index],),));
                 } else {
                   sqfliteHelper.deleteUser(actualId).then((value) {
                     webService.deleteUser(actualId).then((result) {
@@ -143,7 +136,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget _showContainerDismissible(Color color, Icon icon, String title, AlignmentDirectional alignment) {
     return Container(
         margin: EdgeInsets.symmetric(vertical: 5.0),
-        padding: EdgeInsets.only(left: 10.0),
+        padding: EdgeInsets.only(left: 10.0, right: 10.0),
         alignment: alignment,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5.0),
