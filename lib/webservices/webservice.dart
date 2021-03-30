@@ -28,7 +28,21 @@ class WebService {
     return _listUsers;
   }
 
-  Future<bool> createUser(UserData userData) async {
+  Future<bool> deleteUser(int id) async {
+    var response = await http.delete(Uri.parse(_baseUrl + "/$id")).timeout(Duration(seconds: 30));
+    var json = jsonDecode(response.body);
+
+    UserData usersData = UserData.fromJson(json);
+
+    if (usersData.id == id) {
+      return true;
+    } else {
+      return false;
+    }
+
+  }
+
+  Future<bool> addOrUpdateUser(UserData userData, bool isAdd) async {
     Map<String, dynamic> datos = {
       'name' : userData.name,
       'lastname' : userData.last_name,
@@ -37,29 +51,24 @@ class WebService {
       'address' : userData.address
     };
 
-    var response = await http.post(Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(datos)
-    ).timeout(Duration(seconds: 30));
+    var response;
+    if (isAdd) {
+      response = await http.post(Uri.parse(_baseUrl),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(datos)
+      ).timeout(Duration(seconds: 30));
+    } else {
+      response = await http.put(Uri.parse(_baseUrl + "/${userData.id}"),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(datos)
+      ).timeout(Duration(seconds: 30));
+    }
+
     var json = jsonDecode(response.body);
 
     UserData usersDataRecive = UserData.fromJson(json);
 
     if (usersDataRecive.name == userData.name) {
-      return true;
-    } else {
-      return false;
-    }
-
-  }
-
-  Future<bool> deleteUser(int id) async {
-    var response = await http.delete(Uri.parse(_baseUrl + "/$id")).timeout(Duration(seconds: 30));
-    var json = jsonDecode(response.body);
-
-    UserData usersData = UserData.fromJson(json);
-
-    if (usersData.id == id) {
       return true;
     } else {
       return false;

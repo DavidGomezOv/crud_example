@@ -1,5 +1,6 @@
 import 'package:age/age.dart';
 import 'package:crud_example/model/users_model.dart';
+import 'package:crud_example/screens/main_screen.dart';
 import 'package:crud_example/webservices/webservice.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -73,15 +74,7 @@ class _AddEditUserState extends State<AddEditUser> {
         onPressed: () {
           if (_formKey.currentState.validate()) {
             if (_getInputData()) {
-              webService.createUser(userData).then((value) {
-                if (value) {
-                  _showSnackbar("Usuario creado exitosamente", context);
-                  Navigator.of(context).pop();
-                } else {
-                  _showSnackbar("Error al crear usuario", context);
-                }
-                FocusScope.of(context).requestFocus(new FocusNode());
-              });
+              _addEditUserAPI();
             }
           } else {
             _showSnackbar("Debe llenar todos los campos", context);
@@ -91,6 +84,31 @@ class _AddEditUserState extends State<AddEditUser> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
+  }
+
+  void _addEditUserAPI() {
+    if (typeScreen == ADD_USER_SCREEN) {
+      webService.addOrUpdateUser(userData, true).then((value) {
+        if (value) {
+          _showSnackbar("Usuario creado exitosamente", context);
+          Navigator.of(context).pop();
+        } else {
+          _showSnackbar("Error al crear usuario", context);
+        }
+        FocusScope.of(context).requestFocus(new FocusNode());
+      });
+    } else if (typeScreen == EDIT_USER_SCREEN) {
+      webService.addOrUpdateUser(userData, false).then((value) {
+        if (value) {
+          _showSnackbar("Datos actualizados exitosamente", context);
+          Navigator.of(context).pop();
+        } else {
+          _showSnackbar("Error al crear usuario", context);
+        }
+        FocusScope.of(context).requestFocus(new FocusNode());
+      });
+    }
+
   }
 
   Widget _createInput(BuildContext context, String title, String textInfo, int maxLength, IconData icon, bool isEnable, TextEditingController textEditingController) {

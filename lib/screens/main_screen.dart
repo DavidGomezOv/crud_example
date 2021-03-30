@@ -4,15 +4,15 @@ import 'package:crud_example/screens/add_edit_user.dart';
 import 'package:crud_example/webservices/webservice.dart';
 import 'package:flutter/material.dart';
 
+const String ADD_USER_SCREEN = 'Agregar Usuario';
+const String EDIT_USER_SCREEN = 'Editar Usuario';
+
 class MainScreen extends StatefulWidget {
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
-  static const ADD_USER_SCREEN = 'Agregar Usuario';
-  static const EDIT_USER_SCREEN = 'Editar Usuario';
-
   List<UserData> _listUsers = [];
   WebService webService = new WebService();
   SqfliteHelper sqfliteHelper = new SqfliteHelper();
@@ -143,7 +143,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           typeScreen: EDIT_USER_SCREEN,
                           userData: _listUsers[index],
                         ),
-                      ));
+                      )).then((value) {
+                    webService.getData().then((value) {
+                      setState(() {
+                        _listUsers.clear();
+                        _listUsers.addAll(value);
+                      });
+                    });
+                  });
                 } else {
                   sqfliteHelper.deleteUser(actualId).then((value) {
                     if (value == 1) {
