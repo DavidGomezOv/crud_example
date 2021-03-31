@@ -1,7 +1,7 @@
 import 'package:age/age.dart';
 import 'package:crud_example/model/users_model.dart';
 import 'package:crud_example/screens/main_screen.dart';
-import 'package:crud_example/webservices/webservice.dart';
+import 'package:crud_example/webservice/webservice.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

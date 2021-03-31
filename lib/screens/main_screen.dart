@@ -1,7 +1,7 @@
 import 'package:crud_example/database/sqflite_helper.dart';
 import 'package:crud_example/model/users_model.dart';
 import 'package:crud_example/screens/add_edit_user.dart';
-import 'package:crud_example/webservices/webservice.dart';
+import 'package:crud_example/webservice/webservice.dart';
 import 'package:flutter/material.dart';
 
 const String ADD_USER_SCREEN = 'Agregar Usuario';
@@ -37,12 +37,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       body: Container(
         padding: EdgeInsets.all(10.0),
         child: RefreshIndicator(
-          child: ListView.builder(
-            itemCount: _listUsers.length,
-            itemBuilder: (context, index) {
-              return _createItem(index, context);
-            },
-          ),
+          child: _validateListSize(_listUsers.length),
           onRefresh: () {
             return webService.getData().then((value) {
               setState(() {
@@ -211,5 +206,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         content: Text(message),
       ),
     );
+  }
+
+  Widget _validateListSize(int size) {
+    if (size > 0) {
+      return ListView.builder(
+        itemCount: _listUsers.length,
+        itemBuilder: (context, index) {
+          return _createItem(index, context);
+        },
+      );
+    } else {
+      return Center(
+        child: Text("No existen usuarios"),
+      );
+    }
   }
 }
