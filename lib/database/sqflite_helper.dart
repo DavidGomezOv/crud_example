@@ -52,12 +52,6 @@ class SqfliteHelper {
     });
   }
 
-  Future<int> deleteUser(int id) async {
-    final Database db = await _openDb();
-
-    return await db.delete('users', where: "id = ?", whereArgs: [id],);
-  }
-
   Future<void> deleteTableData() async {
     final Database db = await _openDb();
     await db.delete('users');
