@@ -1,4 +1,4 @@
-import 'package:crud_example/blocs/bloc_main_screen.dart';
+import 'package:crud_example/blocs/main_bloc.dart';
 import 'package:crud_example/database/sqflite_helper.dart';
 import 'package:crud_example/model/users_model.dart';
 import 'package:crud_example/screens/add_edit_user.dart';
@@ -18,17 +18,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   WebService webService = new WebService();
   SqfliteHelper sqfliteHelper = new SqfliteHelper();
 
-  MainScreenBloc _mainScreenBloc = MainScreenBloc();
+  MainBloc _mainBloc = MainBloc();
 
   @override
   void initState() {
     super.initState();
-    _mainScreenBloc.sendEvent.add(ListUsers());
+    _mainBloc.sendEvent.add(ListUsers());
   }
 
   @override
   void dispose() {
-    _mainScreenBloc.dispose();
+    _mainBloc.dispose();
     super.dispose();
   }
 
@@ -41,12 +41,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       body: Container(
         padding: EdgeInsets.all(10.0),
         child: RefreshIndicator(
-          child: _validateListSize(_listUsers.length),
+          child: _validateListSizeMB(_listUsers.length),
           onRefresh: () {
             setState(() {
               _listUsers.clear();
             });
-            _mainScreenBloc.sendEvent.add(ListUsers());
+            _mainBloc.sendEvent.add(ListUsers());
             return Future.value(true);
           },
         ),
@@ -62,7 +62,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   userData: null,
                 ),
               )).then((value) {
-            _mainScreenBloc.sendEvent.add(ListUsers());
+            _mainBloc.sendEvent.add(ListUsers());
           });
         },
       ),
@@ -120,38 +120,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           actions: [
             TextButton(
               child: Text("Cancelar"),
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
+              onPressed: () => Navigator.pop(context, false),
             ),
             TextButton(
               child: Text("Aceptar"),
               onPressed: () {
                 if (direction == DismissDirection.endToStart) {
                   Navigator.pop(context, false);
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddEditUser(
-                          typeScreen: EDIT_USER_SCREEN,
-                          userData: _listUsers[index],
-                        ),
-                      )).then((value) {
-                    _mainScreenBloc.sendEvent.add(ListUsers());
-                  });
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => AddEditUser(
+                      typeScreen: EDIT_USER_SCREEN,
+                      userData: _listUsers[index],
+                    ),)).then((value) => _mainBloc.sendEvent.add(ListUsers()));
                 } else {
-                  webService.deleteUser(actualId).then((result) {
-                    if (result) {
-                      _showSnackbar("Usuario eliminado exitosamente", context);
+                  _mainBloc.sendEvent.add(DeleteUser(actualId, context));
+                  _mainBloc.isDeletedUser.listen((event) {
+                    if (event) {
                       setState(() {
                         _listUsers.removeAt(index);
                       });
-                      Navigator.pop(context, true);
-                    } else {
-                      _showSnackbar("Error eliminando usuario (API)", context);
-                      Navigator.pop(context, false);
                     }
-                    _mainScreenBloc.sendEvent.add(ListUsers());
+                    _mainBloc.sendEvent.add(ListUsers());
+                    Navigator.pop(context, event);
                   });
                 }
               },
@@ -184,17 +174,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         ));
   }
 
-  void _showSnackbar(String message, BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
-    );
-  }
-
-  Widget _validateListSize(int size) {
+  Widget _validateListSizeMB(int size) {
     return StreamBuilder(
-        stream: _mainScreenBloc.listUsers,
+        stream: _mainBloc.list,
         builder: (context, snapshot) {
           _listUsers = snapshot.data == null ? [] : snapshot.data;
           if (_listUsers.isEmpty) {
@@ -211,4 +193,5 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           }
         });
   }
+
 }
