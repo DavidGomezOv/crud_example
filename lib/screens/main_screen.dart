@@ -2,6 +2,7 @@ import 'package:crud_example/blocs/main_bloc.dart';
 import 'package:crud_example/database/sqflite_helper.dart';
 import 'package:crud_example/model/users_model.dart';
 import 'package:crud_example/screens/add_edit_user.dart';
+import 'package:crud_example/webservice/WebServiceResponse.dart';
 import 'package:crud_example/webservice/webservice.dart';
 import 'package:flutter/material.dart';
 
@@ -15,15 +16,14 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   List<UserData> _listUsers = [];
-  WebService webService = new WebService();
   SqfliteHelper sqfliteHelper = new SqfliteHelper();
-
-  MainBloc _mainBloc = MainBloc();
+  MainBloc _mainBloc;
 
   @override
   void initState() {
     super.initState();
-    _mainBloc.sendEvent.add(ListUsers());
+    _mainBloc = MainBloc(new WebService());
+    _mainBloc.listUser();
   }
 
   @override
@@ -46,7 +46,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             setState(() {
               _listUsers.clear();
             });
-            _mainBloc.sendEvent.add(ListUsers());
+            _mainBloc.listUser();
             return Future.value(true);
           },
         ),
@@ -62,7 +62,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   userData: null,
                 ),
               )).then((value) {
-            _mainBloc.sendEvent.add(ListUsers());
+            _mainBloc.listUser();
           });
         },
       ),
@@ -131,17 +131,22 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     builder: (context) => AddEditUser(
                       typeScreen: EDIT_USER_SCREEN,
                       userData: _listUsers[index],
-                    ),)).then((value) => _mainBloc.sendEvent.add(ListUsers()));
+                    ),)).then((value) => _mainBloc.listUser());
                 } else {
-                  _mainBloc.sendEvent.add(DeleteUser(actualId, context));
-                  _mainBloc.isDeletedUser.listen((event) {
-                    if (event) {
+                  _mainBloc.deleteUser(actualId).then((event) {
+                    if (event.data) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Usuario eliminado exitosamente"),),
+                      );
                       setState(() {
                         _listUsers.removeAt(index);
                       });
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error: ${event.errorMessage}"),),
+                      );
                     }
-                    _mainBloc.sendEvent.add(ListUsers());
-                    Navigator.pop(context, event);
+                    Navigator.pop(context, event.data);
                   });
                 }
               },
@@ -175,23 +180,53 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Widget _validateListSizeMB(int size) {
-    return StreamBuilder(
-        stream: _mainBloc.list,
+    return StreamBuilder<WebServiceResponse>(
+        stream: _mainBloc.listUsers,
         builder: (context, snapshot) {
-          _listUsers = snapshot.data == null ? [] : snapshot.data;
-          if (_listUsers.isEmpty) {
-            return Center(
-              child: Text("No existen usuarios"),
-            );
+          if (snapshot.hasData) {
+            if (snapshot.data == null) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            if (snapshot.data.errorMessage != null) {
+              return _showErrorScreen(snapshot.data.errorMessage);
+            }
+            if (snapshot.data.data.isEmpty) {
+              return _showErrorScreen("No existen usuarios");
+            } else {
+              _listUsers = snapshot.data.data;
+              return ListView.builder(
+                itemCount: _listUsers.length,
+                itemBuilder: (context, index) {
+                  return _createItem(index, context);
+                },
+              );
+            }
           } else {
-            return ListView.builder(
-              itemCount: _listUsers.length,
-              itemBuilder: (context, index) {
-                return _createItem(index, context);
-              },
+            return Center(
+              child: CircularProgressIndicator(),
             );
           }
         });
+  }
+
+  Widget _showErrorScreen(String errorMsg) {
+    return Container(
+        child: RefreshIndicator(
+            child: Stack(
+              children: <Widget>[
+                Center(child: Text(errorMsg),),
+                ListView()
+              ],
+            ),
+            onRefresh: () {
+              setState(() {_listUsers.clear();});
+              _mainBloc.listUser();
+              return Future.value(true);
+            }
+        )
+    );
   }
 
 }

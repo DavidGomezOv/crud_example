@@ -1,4 +1,5 @@
 import 'package:age/age.dart';
+import 'package:crud_example/blocs/add_edit_bloc.dart';
 import 'package:crud_example/model/users_model.dart';
 import 'package:crud_example/screens/main_screen.dart';
 import 'package:crud_example/webservice/webservice.dart';
@@ -27,7 +28,7 @@ class _AddEditUserState extends State<AddEditUser> {
   GlobalKey<FormState> _formKey =  new GlobalKey<FormState>();
   final FocusNode _focusNodeAddress = FocusNode();
 
-  WebService webService = new WebService();
+  AddEditBloc _addEditBloc = AddEditBloc(new WebService());
 
   _AddEditUserState({this.typeScreen, this.userData});
 
@@ -44,6 +45,7 @@ class _AddEditUserState extends State<AddEditUser> {
   @override
   void dispose() {
     _focusNodeAddress.dispose();
+    _addEditBloc.dispose();
     super.dispose();
   }
 
@@ -87,28 +89,25 @@ class _AddEditUserState extends State<AddEditUser> {
   }
 
   void _addEditUserAPI() {
-    if (typeScreen == ADD_USER_SCREEN) {
-      webService.addOrUpdateUser(userData, true).then((value) {
-        if (value) {
+    bool isAdd = typeScreen == ADD_USER_SCREEN;
+    _addEditBloc.addOrEditUser(userData, isAdd).then((value) {
+      FocusScope.of(context).requestFocus(new FocusNode());
+      if (isAdd) {
+        if (value.data) {
           _showSnackbar("Usuario creado exitosamente", context);
           Navigator.of(context).pop();
         } else {
-          _showSnackbar("Error al crear usuario", context);
+          _showSnackbar("Error: ${value.errorMessage}", context);
         }
-        FocusScope.of(context).requestFocus(new FocusNode());
-      });
-    } else if (typeScreen == EDIT_USER_SCREEN) {
-      webService.addOrUpdateUser(userData, false).then((value) {
-        if (value) {
-          _showSnackbar("Datos actualizados exitosamente", context);
+      } else {
+        if (value.data) {
+          _showSnackbar("Usuario actualizado exitosamente", context);
           Navigator.of(context).pop();
         } else {
-          _showSnackbar("Error al crear usuario", context);
+          _showSnackbar("Error: ${value.errorMessage}", context);
         }
-        FocusScope.of(context).requestFocus(new FocusNode());
-      });
-    }
-
+      }
+    });
   }
 
   Widget _createInput(BuildContext context, String title, String textInfo, int maxLength, IconData icon, bool isEnable, TextEditingController textEditingController) {
@@ -159,14 +158,12 @@ class _AddEditUserState extends State<AddEditUser> {
     );
 
     if (datePicked != null) {
-
       AgeDuration age;
       age = Age.dateDifference(
           fromDate: new DateTime(datePicked.year, datePicked.month, datePicked.day),
           toDate: DateTime.now(),
           includeToDate: false
       );
-
       setState(() {
         userData.birthday = ("${datePicked.day}-${datePicked.month}-${datePicked.year}");
         userData.age = int.parse(age.years.toString());
@@ -178,9 +175,7 @@ class _AddEditUserState extends State<AddEditUser> {
   }
 
   bool _getInputData() {
-
     String _name = _editingControllerName.text;
-
     if (_name.contains(" ") && _name.length > _name.indexOf(" ") + 1) {
       userData.name = _name.substring(0, _name.indexOf(" "));
       userData.last_name = _name.substring(_name.indexOf(" ") + 1);
@@ -190,7 +185,13 @@ class _AddEditUserState extends State<AddEditUser> {
       _showSnackbar("Debe ingresar nombre y apellido", this.context);
       return false;
     }
+  }
 
+  void _setUserData(UserData userData) {
+    _editingControllerName.text = userData.name + " " + userData.last_name;
+    _editingControllerDate.text = userData.birthday;
+    _editingControllerAge.text = userData.age.toString();
+    _editingControllerAddress.text = userData.address;
   }
 
   void _showSnackbar(String message, BuildContext context) {
@@ -199,13 +200,6 @@ class _AddEditUserState extends State<AddEditUser> {
         content: Text(message),
       ),
     );
-  }
-
-  void _setUserData(UserData userData) {
-    _editingControllerName.text = userData.name + " " + userData.last_name;
-    _editingControllerDate.text = userData.birthday;
-    _editingControllerAge.text = userData.age.toString();
-    _editingControllerAddress.text = userData.address;
   }
 
 }
