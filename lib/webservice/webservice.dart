@@ -20,7 +20,7 @@ class WebService {
         var json = jsonDecode(response.body);
 
         if (response.statusCode != 200) {
-          return WebServiceResponse([], "Error");
+          return WebServiceResponse([], "Error", false);
         }
 
         await SqfliteHelper().deleteTableData();
@@ -35,10 +35,10 @@ class WebService {
           });
         });
 
-        return WebServiceResponse(_listUsers, null);
+        return WebServiceResponse(_listUsers, null, false);
 
       } on Exception {
-        return WebServiceResponse([], "Error inesperado");
+        return WebServiceResponse([], "Error inesperado", false);
       }
     } else {
 
@@ -49,7 +49,7 @@ class WebService {
         });
       });
 
-      return WebServiceResponse(_listUsers, null);
+      return WebServiceResponse(_listUsers, null, false);
 
     }
   }
@@ -65,17 +65,17 @@ class WebService {
             .timeout(Duration(seconds: 30));
 
         if (response.statusCode == 200) {
-          return WebServiceResponse(true, null);
+          return WebServiceResponse(true, null, false);
         } else {
-          return WebServiceResponse(false, "Error");
+          return WebServiceResponse(false, "Error", false);
         }
 
       } on Exception {
-        return WebServiceResponse(false, "Error inesperado");
+        return WebServiceResponse(false, "Error inesperado", false);
       }
 
     } else {
-      return WebServiceResponse(false, "No hay conexión a internet");
+      return WebServiceResponse(false, "No hay conexión a internet", false);
     }
 
 
@@ -111,13 +111,13 @@ class WebService {
       }
 
       if ((response.statusCode == 201 && isAdd) || (response.statusCode == 200 && !isAdd)) {
-        return WebServiceResponse(true, null);
+        return WebServiceResponse(true, null, false);
       } else {
-        return WebServiceResponse(false, "Error");
+        return WebServiceResponse(false, "Error", false);
       }
 
     } else {
-      return WebServiceResponse(false, "No hay conexión a internet");
+      return WebServiceResponse(false, "No hay conexión a internet", false);
     }
   }
 

@@ -18,6 +18,7 @@ class MainBloc {
   }
 
   Future<WebServiceResponse> listUser() {
+    _listUsersSubject.add(new WebServiceResponse([], null, true));
     return webService.getListUsers().then((result) {
       _listUsersSubject.add(result);
       return result;

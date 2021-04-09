@@ -78,8 +78,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             color: Colors.lightBlueAccent),
         margin: EdgeInsets.symmetric(vertical: 5.0),
         child: ListTile(
-          title: Text(_listUsers[index].name),
+          title: Text(_listUsers[index].name, style: TextStyle(fontSize: 16.0),),
           subtitle: Text(_listUsers[index].last_name),
+          trailing: Text("Edad: ${_listUsers[index].age.toString()}"),
         ),
       ),
       confirmDismiss: (direction) => _showDialog(index, context, direction),
@@ -112,6 +113,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _action = "actualizar";
     }
     return await showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -138,9 +140,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("Usuario eliminado exitosamente"),),
                       );
-                      setState(() {
-                        _listUsers.removeAt(index);
-                      });
+                      _mainBloc.listUser();
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("Error: ${event.errorMessage}"),),
@@ -193,7 +193,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               return _showErrorScreen(snapshot.data.errorMessage);
             }
             if (snapshot.data.data.isEmpty) {
-              return _showErrorScreen("No existen usuarios");
+              if (snapshot.data.isLoading) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else {
+                return _showErrorScreen("No existen usuarios");
+              }
             } else {
               _listUsers = snapshot.data.data;
               return ListView.builder(
@@ -221,7 +227,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               ],
             ),
             onRefresh: () {
-              setState(() {_listUsers.clear();});
               _mainBloc.listUser();
               return Future.value(true);
             }
