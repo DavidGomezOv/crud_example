@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:crud_example/model/users_model.dart';
-import 'package:crud_example/webservice/WebServiceResponse.dart';
-import 'package:crud_example/webservice/webservice.dart';
+import 'package:crud_example/webservice/web_service_response.dart';
+import 'package:crud_example/webservice/web_service.dart';
 import 'package:rxdart/rxdart.dart';
 
 class AddEditBloc {

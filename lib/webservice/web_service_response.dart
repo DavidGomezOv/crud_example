@@ -1,4 +1,3 @@
-
 class WebServiceResponse {
 
   dynamic data;

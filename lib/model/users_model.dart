@@ -3,17 +3,17 @@ class UserData {
   int id;
   String name;
   int age;
-  String last_name;
+  String lastName;
   String birthday;
   String address;
 
-  UserData({this.id, this.name, this.age, this.last_name, this.birthday, this.address});
+  UserData({this.id, this.name, this.age, this.lastName, this.birthday, this.address});
 
   UserData.fromJson(Map<String, dynamic> json_map) {
     id =  int.parse(json_map['id']);
     name = json_map['name'];
     age = json_map['age'];
-    last_name = json_map['lastname'];
+    lastName = json_map['lastname'];
     birthday = json_map['birthday'].toString();
     address = json_map['address'];
   }
@@ -23,7 +23,7 @@ class UserData {
       'id' : id,
       'name' : name,
       'age' : age,
-      'lastname' : last_name,
+      'lastname' : lastName,
       'birthday' : birthday,
       'address' : address,
     };

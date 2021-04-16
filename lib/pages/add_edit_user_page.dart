@@ -1,16 +1,17 @@
 import 'package:age/age.dart';
 import 'package:crud_example/blocs/add_edit_bloc.dart';
 import 'package:crud_example/model/users_model.dart';
-import 'package:crud_example/screens/main_screen.dart';
-import 'package:crud_example/webservice/webservice.dart';
+import 'package:crud_example/webservice/web_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'main_page.dart';
 
 
 class AddEditUser extends StatefulWidget {
 
-  String typeScreen;
-  UserData userData;
+  final String typeScreen;
+  final UserData userData;
   AddEditUser({this.typeScreen, this.userData});
 
   @override
@@ -21,10 +22,10 @@ class _AddEditUserState extends State<AddEditUser> {
 
   String typeScreen;
   UserData userData;
-  TextEditingController _editingControllerAge = new TextEditingController();
-  TextEditingController _editingControllerDate = new TextEditingController();
-  TextEditingController _editingControllerName = new TextEditingController();
-  TextEditingController _editingControllerAddress = new TextEditingController();
+  final TextEditingController _editingControllerAge = new TextEditingController();
+  final TextEditingController _editingControllerDate = new TextEditingController();
+  final TextEditingController _editingControllerName = new TextEditingController();
+  final TextEditingController _editingControllerAddress = new TextEditingController();
   GlobalKey<FormState> _formKey =  new GlobalKey<FormState>();
   final FocusNode _focusNodeAddress = FocusNode();
 
@@ -46,6 +47,10 @@ class _AddEditUserState extends State<AddEditUser> {
   void dispose() {
     _focusNodeAddress.dispose();
     _addEditBloc.dispose();
+    _editingControllerAge.dispose();
+    _editingControllerDate.dispose();
+    _editingControllerName.dispose();
+    _editingControllerAddress.dispose();
     super.dispose();
   }
 
@@ -178,7 +183,7 @@ class _AddEditUserState extends State<AddEditUser> {
     String _name = _editingControllerName.text;
     if (_name.contains(" ") && _name.length > _name.indexOf(" ") + 1) {
       userData.name = _name.substring(0, _name.indexOf(" "));
-      userData.last_name = _name.substring(_name.indexOf(" ") + 1);
+      userData.lastName = _name.substring(_name.indexOf(" ") + 1);
       userData.address = _editingControllerAddress.text;
       return true;
     } else {
@@ -188,7 +193,7 @@ class _AddEditUserState extends State<AddEditUser> {
   }
 
   void _setUserData(UserData userData) {
-    _editingControllerName.text = userData.name + " " + userData.last_name;
+    _editingControllerName.text = userData.name + " " + userData.lastName;
     _editingControllerDate.text = userData.birthday;
     _editingControllerAge.text = userData.age.toString();
     _editingControllerAddress.text = userData.address;

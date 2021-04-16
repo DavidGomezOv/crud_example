@@ -33,19 +33,14 @@ class SqfliteHelper {
 
   Future<List<UserData>> listUsers() async {
     final Database db = await _openDb();
-
     final List<Map<String, dynamic>> maps = await db.query('users');
-
-    for (var n in maps) {
-      print('___' + n['name']);
-    }
 
     return List.generate(maps.length, (i) {
       return UserData(
         id: maps[i]['id'],
         name: maps[i]['name'],
         age: maps[i]['age'],
-        last_name: maps[i]['lastname'],
+        lastName: maps[i]['lastname'],
         birthday: maps[i]['birthday'],
         address: maps[i]['address'],
       );

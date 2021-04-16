@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:crud_example/database/sqflite_helper.dart';
 import 'package:crud_example/model/users_model.dart';
-import 'package:crud_example/webservice/WebServiceResponse.dart';
+import 'package:crud_example/webservice/web_service_response.dart';
 import 'package:http/http.dart' as http;
 
 class WebService {
@@ -89,7 +89,7 @@ class WebService {
 
       Map<String, dynamic> datos = {
         'name': userData.name,
-        'lastname': userData.last_name,
+        'lastname': userData.lastName,
         'age': userData.age,
         'birthday': userData.birthday,
         'address': userData.address
@@ -132,6 +132,7 @@ class WebService {
       print('not connected');
       return false;
     }
+    return false;
   }
 
 }
